@@ -11,10 +11,13 @@ def newlisttodo(request):
     todo_tasks=Task.objects.filter(status='todo')
     working_tasks=Task.objects.filter(status='working')
     done_tasks=Task.objects.filter(status='done')
+    edit_id=request.GET.get('edit_id')
+    print(edit_id)
     return render(request,'newtodo.html',{
         'todo_tasks':todo_tasks,
         'working_tasks':working_tasks,
-        'done_tasks':done_tasks
+        'done_tasks':done_tasks,
+        'edit_id':int(edit_id) if edit_id else None
     })
 
 #thêm task vào cơ sở dữ liệu
@@ -39,7 +42,19 @@ def delete_task(request,task_id):
     #xoá task
     task.delete()
     # chuyển hướng về trang chính
-    return redirect('index')
+    return redirect('newlisttodo')
+    
+def edit_task(request,task_id):
+    task=Task.objects.get(id=task_id)
+    if request.method =='POST':
+        description = request.POST.get('description','').strip()
+        status = request.POST.get('status', task.status)
+        if description:
+            task.description = description
+        if status in dict(Task.STATUS_CHOICES):
+            task.status = status
+        task.save()
+        return redirect('newlisttodo')
     
 
 
